@@ -8,7 +8,7 @@
                 <input type="text" placeholder="Cari menu ..." id="searchInput" class="w-full p-2 rounded bg-gray-200 dark:bg-gray-700">
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4" id="productsContainer">
                     @foreach($products as $item)
-                    <div class="product-item p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow" data-product-name="{{$item->name}}" data-product-price="{{$item->sele_price}}">
+                    <div class="product-item p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow" data-product-name="{{$item->name}}" data-product-price="{{$item->sele_price}}" data-product-id="{{$item->id}}">
                         <img src="burger.jpg" alt="{{$item->name}}" class="w-full h-20 object-cover rounded">
                         <h3 class="mt-2 text-center">{{$item->name}}</h3>
                         <p class="text-center font-bold">Rp. {{$item->sele_price}}</p>
@@ -37,11 +37,11 @@
                         <span id="priceCount">0</span>
                     </div>
                     <div class="flex justify-between items-center mt-2">
-                        <span>Cash</span>
+                        <span>Pay Amount</span>
                         <input id="cashInput" type="text" class="w-20 text-right p-1 rounded bg-gray-200 dark:bg-gray-700">
                     </div>
                     <div class="flex justify-between font-bold mt-2">
-                        <span>Kembalian</span>
+                        <span>Change</span>
                         <span id="cashReturn">Rp. 0</span>
                     </div>
                     <button onclick="openModal()" class="w-full mt-4 p-2 bg-blue-500 text-white rounded">Submit</button>
@@ -66,7 +66,8 @@
                     {{-- untuk Content invoicenya --}}
                 </div>
                 <button 
-                    type="button" 
+                    type="button"
+                    id="submitTransaction" 
                     class="w-full mt-4 p-2 bg-blue-500 hover:bg-blue-600 focus:ring focus:ring-blue-300 rounded-lg text-white font-medium transition duration-200">
                     PROCEED
                 </button>
@@ -77,7 +78,44 @@
     </div>
 </x-filament::page>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $("#submitTransaction").click(function () {
+        let totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        let payAmount = parseFloat($("#cashInput").val()) || 0;
+        let user_id = 1;
+        let transaction_no = "TWPOS-KS-1618104058";
+        let paymentMethod ="Cash";
 
+        let requestData = {
+            user_id: user_id,
+            paymentMethod: paymentMethod,
+            transaction_no: transaction_no,
+            timestamp: getCurrentTime(),
+            total_price: totalPrice,
+            pay_amount: payAmount,
+            items: cart
+        };
+console.log(requestData);
+        $.ajax({
+            url: "/transactions/store",
+            type: "POST",
+            contentType: "application/json",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            data: JSON.stringify(requestData),
+            success: function (response) {
+
+                alert("Transaction successful: " + response.message);
+                window.location.reload();
+            },
+            error: function (xhr) {
+                alert("Transaction failed: " + xhr.responseJSON.error);
+            }
+        });
+    });
+</script>
 {{-- script untuk keranjang --}}
 <script>
     let cart = []; // Array untuk menyimpan item keranjang
@@ -86,6 +124,7 @@
         const productElement = button.closest('div');
         const productName = productElement.dataset.productName;
         const productPrice = parseInt(productElement.dataset.productPrice);
+        const productId = parseInt(productElement.dataset.productId);
 
         // Cek apakah produk sudah ada di keranjang
         const existingProduct = cart.find(item => item.name === productName);
@@ -94,6 +133,7 @@
             existingProduct.quantity++; // Tambah quantity jika produk sudah ada
         } else {
             cart.push({ // Tambah produk baru jika belum ada
+                id:productId,
                 name: productName,
                 price: productPrice,
                 quantity: 1
@@ -232,7 +272,7 @@
     });
 </script>
 
-{{-- script untuk pop-up --}}
+    {{-- script untuk pop-up --}}
 <script>
     //Fungsi Untuk Menutup Modal Invoce
     function closeModal() {
@@ -270,13 +310,14 @@
             
         let payAmount = parseFloat(cashInput.value) || 0;
         let changeAmount = payAmount - totalPrice;
+        let TransactionIdOld = {{$transactionsIdLast}} + 1;
 
         document.getElementById("InvoiceContent").innerHTML = `
             <h2 class="text-center text-lg font-bold text-gray-900 dark:text-white">Management GYM</h2>
             <p class="text-center text-sm text-gray-500 dark:text-gray-400">CABANG KONOHA SELATAN</p>
             <hr class="my-2 border-gray-300 dark:border-gray-600">
             <p class="text-sm text-gray-700 dark:text-gray-300">
-                No: TWPOS-KS-1618104058 
+                No: TWPOS-KS-${TransactionIdOld} 
                 <span class="float-right">${getCurrentTime()}</span>
             </p>
             <hr class="my-2 border-gray-300 dark:border-gray-600">
@@ -315,10 +356,9 @@
             </div>
         `;
     }
-
-    
-    
+  
 </script
+
 
 
 

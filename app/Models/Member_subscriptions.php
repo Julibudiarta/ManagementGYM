@@ -8,16 +8,16 @@ class Member_subscriptions extends Model
 {
     protected $fillable = [
         'member_id',
-        'subscription_id',
+        'membership_id',
         'start_date',
         'end_date',
         'status'
     ];
 
     public function Members(){
-        return $this->belongsTo(Member::class);
+        return $this->belongsTo(Member::class,'member_id');
     }
     public function Subscriptions(){
-        return $this->belongsTo(Membership_type::class);
+        return $this->belongsTo(Membership_type::class,'membership_id');
     }
 }
