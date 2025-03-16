@@ -19,6 +19,15 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getNavigationLabel(): string
+    {
+        return 'Category';
+    }
+    public static function getModelLabel(): string
+    {
+        return 'Category';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

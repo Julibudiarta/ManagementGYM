@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('transactions_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transaction_id')->constrained('Transactions')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('product')->onDelete('cascade');
             $table->integer('qty');
             $table->decimal('price_product',10,2);
             $table->decimal('subtotal',10,2 );

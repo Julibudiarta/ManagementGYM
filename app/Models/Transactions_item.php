@@ -8,7 +8,7 @@ class Transactions_item extends Model
 {
     protected $fillable = [
         'transaction_id', 
-        'pruduct_id',
+        'product_id',
         'qty',
         'price_product', 
         'subtotal'
@@ -19,6 +19,6 @@ class Transactions_item extends Model
     }
 
     public function product(){
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Productss::class);
     }
 }

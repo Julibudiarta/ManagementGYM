@@ -23,6 +23,6 @@ class Transactions extends Model
         return $this->hasMany(Transactions_item::class);
     }
     public function Products(){
-        return $this->belongsToMany(Product::class, 'transactions_items', 'transaction_id', 'product_id');
+        return $this->belongsToMany(Productss::class, 'transactions_items', 'transaction_id', 'product_id');
     }
 }

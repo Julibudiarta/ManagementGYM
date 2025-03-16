@@ -14,9 +14,6 @@ class Membership_type extends Model
         'is_active',
     ];
     public function members(){
-        return $this->hasMany(Member::class);
-    }
-    public function subscriptions(){
-        return $this->hasMany(Membership_type::class);
+        return $this->hasMany(Member::class,'membership_id');
     }
 }

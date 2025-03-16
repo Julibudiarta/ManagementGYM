@@ -11,6 +11,7 @@ class member extends Model
         'email',
         'phone',
         'address',
+        'birthdate',
         'gender',
         'photo',
         'identification',
@@ -19,10 +20,10 @@ class member extends Model
         return $this->hasMany(Transactions::class);
     }
     public function memberType(){
-        return $this->belongsTo(Membership_type::class);
+        return $this->belongsTo(Membership_type::class,'membership_id');
     }
 
     public function Membership(){
-        return $this->belongsToMany(Member_subscriptions::class);
+        return $this->hasMany(Member_subscriptions::class,'member_id');
     }
 }
