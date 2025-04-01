@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TransactionResource\Pages;
 
 use App\Filament\Resources\TransactionResource;
+use App\Models\member;
 use App\Models\Productss;
 use App\Models\Transactions;
 use App\Models\Transactions_item;
@@ -20,7 +21,8 @@ class PosTransaction extends ListRecords
     {
         return [
             'products' => Productss::all(),
-            'transactionsIdLast' => Transactions::latest('id')->value('id')
+            'transactionsIdLast' => Transactions::latest('id')->value('id'),
+            'members' => member::all(),
         ];
     }
 
@@ -28,7 +30,7 @@ class PosTransaction extends ListRecords
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'member_id' => 'nullable|exists:members,id',
+            // 'member_id' => 'nullable|exists:members,id',
             'pay_amount' => 'required|numeric',
             'paymentMethod' => 'required|string',
             'items' => 'required|array',

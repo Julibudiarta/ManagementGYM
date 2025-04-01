@@ -10,7 +10,9 @@ class Transactions extends Model
         'user_id',
         'member_id',
         'total_amount',
-        'payment_method'
+        'payment_method',
+        'created_at',
+        'updated_at'
     ];
 
     public function user(){

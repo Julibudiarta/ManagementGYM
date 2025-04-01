@@ -16,4 +16,9 @@ class Membership_type extends Model
     public function members(){
         return $this->hasMany(Member::class,'membership_id');
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Member_subscriptions::class);
+    }
 }

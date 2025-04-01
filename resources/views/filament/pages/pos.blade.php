@@ -8,7 +8,7 @@
                 <input type="text" placeholder="Cari menu ..." id="searchInput" class="w-full p-2 rounded bg-gray-200 dark:bg-gray-700">
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4" id="productsContainer">
                     @foreach($products as $item)
-                    <div class="product-item p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow" data-product-name="{{$item->name}}" data-product-price="{{$item->sele_price}}" data-product-id="{{$item->id}}">
+                    <div class="product-item p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow" data-product-name="{{$item->name}}" data-product-price="{{$item->sele_price}}" data-product-id="{{$item->id}}" data-product-barcode="{{$item->barcode}}">
                         <img src="burger.jpg" alt="{{$item->name}}" class="w-full h-20 object-cover rounded">
                         <h3 class="mt-2 text-center">{{$item->name}}</h3>
                         <p class="text-center font-bold">Rp. {{$item->sele_price}}</p>
@@ -29,15 +29,29 @@
                             <!-- Item keranjang akan muncul di sini -->
                         </div>
                     </div>
-                    <!-- Tambahkan item lain di keranjang -->
                 </div>
                 <div class="mt-4 border-t pt-4">
+                    <div class="relative mt-2">
+                        <span class="block font-bold">Member</span>
+                        <input 
+                            id="memberInput" 
+                            type="text" 
+                            class="w-full text-right p-2 rounded bg-gray-200 dark:bg-gray-700"
+                            onkeyup="filterMembers()"
+                            onclick="showMemberList()"
+                            autocomplete="off"
+                        >
+                        <ul id="memberList" class="absolute w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded mt-1 shadow-md hidden max-h-40 overflow-y-auto">
+                            <!-- Data akan diisi oleh JavaScript -->
+                        </ul>
+                    </div>
+                                   
                     <div class="flex justify-between font-bold">
                         <span>Total</span>
                         <span id="priceCount">0</span>
                     </div>
                     <div class="flex justify-between items-center mt-2">
-                        <span>Pay Amount</span>
+                        <span class="font-bold">Pay Amount</span>
                         <input id="cashInput" type="text" class="w-20 text-right p-1 rounded bg-gray-200 dark:bg-gray-700">
                     </div>
                     <div class="flex justify-between font-bold mt-2">
@@ -80,10 +94,12 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    //submitTransactionButton
     $("#submitTransaction").click(function () {
         let totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
         let payAmount = parseFloat($("#cashInput").val()) || 0;
-        let user_id = 1;
+        let memberVal = getSelectedMemberId()
+        let user_id = @json(Auth::user()->id);
         let transaction_no = "TWPOS-KS-1618104058";
         let paymentMethod ="Cash";
 
@@ -94,7 +110,8 @@
             timestamp: getCurrentTime(),
             total_price: totalPrice,
             pay_amount: payAmount,
-            items: cart
+            items: cart,
+            member_id: memberVal
         };
 console.log(requestData);
         $.ajax({
@@ -238,8 +255,9 @@ console.log(requestData);
     function searchProducts(query) {
         productItems.forEach(item => {
             const productName = item.dataset.productName.toLowerCase();
+            const productBarcode = item.dataset.productBarcode.toLowerCase();   
             // atur display
-            if (productName.includes(query.toLowerCase())) {
+            if (productName.includes(query.toLowerCase()) || productBarcode.includes(query.toLowerCase())) {
                 item.style.display = 'block'; 
             } else {
                 item.style.display = 'none';
@@ -255,6 +273,14 @@ console.log(requestData);
         });
     }
 
+    function addItemByBarcode(productBarcode) {
+        productItems.forEach(item => {
+            if (item.dataset.productBarcode.toLowerCase() === productBarcode.toLowerCase()) {
+                addToCart(item.querySelector('button'));
+            }
+        });
+    }
+
     searchInput.addEventListener('input', function () {
         const query = this.value.trim();
         searchProducts(query);
@@ -265,6 +291,7 @@ console.log(requestData);
             const query = this.value.trim();
             if (query) {
                 addItemByName(query);
+                addItemByBarcode(query);
                 this.value = ''; 
                 searchProducts('');
             }
@@ -357,7 +384,65 @@ console.log(requestData);
         `;
     }
   
-</script
+</script>
+
+<script> 
+    const memberData = @json($members->map(fn($member) => [
+        'name' => $member->name,
+        'id' => $member->id,
+    ])->toArray());
+
+    const members = Array.isArray(memberData) ? memberData : [];
+    const memberInput = document.getElementById("memberInput");
+    const memberList = document.getElementById("memberList");
+
+    function populateMemberList() {
+        memberList.innerHTML = ""; 
+        members.forEach(member => {
+            let li = document.createElement("li");
+            li.textContent = `${member.name} - ${member.id}`;
+            li.className = "p-2 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600";
+            li.onclick = () => {
+                memberInput.value = member.name;
+                memberInput.dataset.selectedId = member.id;
+                // console.log("ID yang dipilih:", memberInput.dataset.selectedId);
+                memberList.classList.add("hidden");
+            };
+            memberList.appendChild(li);
+        });
+    }
+
+    // Filter berdasarkan input
+    function filterMembers() {
+        const query = memberInput.value.toLowerCase();
+        const items = memberList.getElementsByTagName("li");
+        for (let item of items) {
+            if (item.textContent.toLowerCase().includes(query)) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
+            }
+        }
+    }
+
+    // Tampilkan daftar saat input diklik
+    function showMemberList() {
+        populateMemberList();
+        memberList.classList.remove("hidden");
+    }
+
+    // Sembunyikan daftar jika klik di luar
+    document.addEventListener("click", (e) => {
+        if (!memberInput.contains(e.target) && !memberList.contains(e.target)) {
+            memberList.classList.add("hidden");
+        }
+    });
+
+    // Cara mengambil ID yang dipilih
+    function getSelectedMemberId() {
+        return memberInput.dataset.selectedId || null;
+    }
+</script>
 
 
 

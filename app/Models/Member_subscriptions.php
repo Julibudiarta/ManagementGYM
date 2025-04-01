@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Member_subscriptions extends Model
@@ -19,5 +20,19 @@ class Member_subscriptions extends Model
     }
     public function Subscriptions(){
         return $this->belongsTo(Membership_type::class,'membership_id');
+    }
+
+    public function membershipType()
+    {
+        return $this->belongsTo(Membership_type::class,'membership_id');
+    }
+
+    protected static function booted()
+    {
+        static::retrieved(function ($model) {
+            if ($model->end_date && Carbon::now()->greaterThan($model->end_date)) {
+                $model->update(['status' => 'expired']);
+            }
+        });
     }
 }
