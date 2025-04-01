@@ -6,8 +6,12 @@ use App\Filament\Resources\MemberResource\Pages;
 use App\Filament\Resources\MemberResource\RelationManagers;
 use App\Models\Member;
 use App\Models\Membership_type;
+use DB;
+use Filament\Forms\Set;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
@@ -22,6 +26,7 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Str;
 
 class MemberResource extends Resource
 {
@@ -53,15 +58,27 @@ class MemberResource extends Resource
                         'male' => 'Male',
                         'female' => 'Female',
                     ])->required(),
-                    FileUpload::make('photo')->image()->nullable(),
+                    // FileUpload::make('photo')->image()->nullable(),
                     TextInput::make('identification')->numeric()->nullable(),
                         // Select input for Membership Type
-                    Forms\Components\Select::make('membership_type_id')
+                    Select::make('membership_type_id')
                         ->label('Membership Type')
                         ->options(fn () => Membership_type::pluck('name', 'id')->toArray())
                         ->required()
-                        ->searchable(),
-                    ])
+                        ->searchable()
+                        ->afterStateUpdated(fn ($set, $get) => 
+                            $set('amount', Membership_type::find($get('membership_type_id'))?->price ?? 0)
+                        ),
+                    TextInput::make('amount')
+                        ->label('Jumlah Pembayaran')
+                        ->numeric()
+                        ->required()
+                        ->prefix('Rp ')
+                        ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state))
+                        ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.'))
+                        ->readonly()
+                        ->reactive(),
+                ])
         ]);
     }
 
@@ -75,7 +92,7 @@ class MemberResource extends Resource
             TextColumn::make('birthdate')->date()->sortable(),
             TextColumn::make('address')->limit(30),
             BadgeColumn::make('gender'),
-            ImageColumn::make('photo')->circular(),
+            // ImageColumn::make('photo')->circular(),
             TextColumn::make('identification')->sortable(),
             TextColumn::make('Membership.Subscriptions.name')
             ->label('Membership')
@@ -88,8 +105,7 @@ class MemberResource extends Resource
                 ->sortable()
                 ->colors([
                     'success' => 'active',
-                    'warning' => 'pending',
-                    'danger' => 'inactive',
+                    'danger' => 'expired',
                 ]),
             TextColumn::make('Membership.start_date')
                 ->label('Start Date')
@@ -105,6 +121,92 @@ class MemberResource extends Resource
          Filter::make('gender')->query(fn ($query, $value) => $query->where('gender', $value)),
         ])
         ->actions([
+            Action::make('activate_package')
+                ->label('Aktifkan Paket')
+                ->icon('heroicon-o-currency-dollar')
+                ->color('primary')
+                ->requiresConfirmation()
+                // ->visible(fn (Member $record) => $record->membership?->status !== 'active') // Hanya muncul jika tidak aktif
+                ->form([
+                    Forms\Components\TextInput::make('amount')
+                        ->label('Jumlah Pembayaran')
+                        ->numeric()
+                        ->required()
+                        ->default(fn ($record) => $record->activeMembership?->membershipType?->price ?? 0)
+                        ->prefix('Rp ')
+                        ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state))
+                        ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.'))
+                        ->readonly(),
+                ])
+                ->action(function (array $data, Member $record) {
+                    DB::transaction(function () use ($data, $record) {
+                        // Update status paket ke "active"
+                        $record->activeMembership()->update([
+                            'status' => 'active',
+                            'end_date' => now()->addDays($record->activeMembership?->membershipType?->duration ?? 30), // Contoh: Paket berlaku 1 bulan
+                        ]);
+
+                        // Simpan transaksi pembayaran
+                        $record->Transactions()->create([
+                            'user_id' => Auth()->user()->id,
+                            'member_id' => $record->id,
+                            'total_amount'=>$data['amount'],
+                            'payment_method'=> 'cash',
+                            'created_at' => now(),    
+                        ]);
+                    });
+
+                    Notification::make()
+                        ->title('Paket berhasil diaktifkan!')
+                        ->success()
+                        ->send();
+                }),
+            Action::make('changeMembership')
+                ->label('Ubah Membership')
+                ->form([
+                    Select::make('membershipTypeId')
+                        ->label('Membership Type')
+                        ->options(fn () => Membership_type::pluck('name', 'id')->toArray())
+                        ->required()
+                        ->searchable()
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn ($set, $get) => 
+                            $set('amount', Membership_type::find($get('membershipTypeId'))?->price ?? 0)
+                        ),
+                        TextInput::make('amount')
+                        ->label('Jumlah Pembayaran')
+                        ->numeric()
+                        ->required()
+                        ->prefix('Rp ')
+                        ->dehydrateStateUsing(fn ($state) => (int) str_replace('.', '', $state))
+                        ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.'))
+                        ->readonly()
+                        ->reactive(),
+                ])
+                ->action(function ($record, array $data) {
+                    $record->Membership()->update(['membership_id' => $data['membershipTypeId']]);
+
+                    DB::transaction(function () use ($data, $record) {
+                        $record->activeMembership()->update([
+                            'status' => 'active',
+                            'end_date' => now()->addDays($record->activeMembership?->membershipType?->duration ?? 0), // opsional bisa dirubah dengan di tambah sisa hari dari paket sebelumnya?
+                        ]);
+                        $record->Transactions()->create([
+                            'user_id' => Auth()->user()->id,
+                            'member_id' => $record->id,
+                            'total_amount'=>$data['amount'],
+                            'payment_method'=> 'cash',
+                            'created_at' => now(),    
+                        ]);
+                    });
+
+                    Notification::make()
+                        ->title('Membership berhasil diperbarui!')
+                        ->success()
+                        ->send();
+                })
+                // ->icon('heroicon-o-refresh')
+                ->color('primary'),
             Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),
         ])

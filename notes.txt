@@ -1,0 +1,19 @@
+Buatkan menu Scheduling untuk mengatur member yang sheck - in pada hari ini berdasarkan member yang memiliki Membership yang aktive
+
+Pada menu pembutan member jika paket tidak aktive maka bisa mengaktivekannya kembali dengan button dan menerima pembayaran yang dimana pembayarannya tersebut akan masuk ke table transaksi
+kemudian lakukan chekin di menu chekin. Setiap kali create member pembayarannya masuk ke menu transaksi
+
+pada menu member perlu membuat button untuk meganti type memberhip jika user ingin mengupgrade member type
+
+
+Kartu member di kirimkan lewat Email untuk mengetahui kapan member aktive
+
+jika tidak membeli dari member bisa membeli dari transaksi tetapi hanya berlaku untuk yang sehari?
+
+Barcode pada menu POS
+
+Menu Setting Untuk Setting Branch perusahan
+
+#opsional
+Untuk service setiap kelas ada instruktur
+di bedakan berdasarkan kelas yang di ambil

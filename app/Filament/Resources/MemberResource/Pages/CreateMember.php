@@ -8,6 +8,7 @@ use App\Models\Member_subscriptions;
 use App\Models\Membership_type;
 use App\Models\MembershipType;
 use App\Models\MemberSubscription;
+use App\Models\Transactions;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Carbon\Carbon;
@@ -43,6 +44,15 @@ class CreateMember extends CreateRecord
                     'start_date' => $startDate,
                     'end_date' => $endDate,
                     'status' => 'active',
+                ]);
+
+                // Simpan transaksi pembayaran
+                Transactions::create([
+                    'user_id' => Auth()->user()->id,
+                    'member_id' => $member->id,
+                    'total_amount'=>$membershipType->price,
+                    'payment_method'=> 'cash',
+                    'created_at' => now(),    
                 ]);
             } else {
                 // Handle the case where the membership type doesn't exist
