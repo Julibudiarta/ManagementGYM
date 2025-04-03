@@ -17,3 +17,5 @@ Menu Setting Untuk Setting Branch perusahan
 #opsional
 Untuk service setiap kelas ada instruktur
 di bedakan berdasarkan kelas yang di ambil
+
+#tambah fitur chekOut

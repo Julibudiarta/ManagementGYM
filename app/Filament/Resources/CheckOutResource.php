@@ -2,35 +2,40 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SchedulingResource\Pages;
+use App\Filament\Resources\CheckOutResource\Pages;
+use App\Filament\Resources\CheckOutResource\RelationManagers;
+use App\Models\CheckIn;
 use App\Models\Member;
+use Filament\Tables\Actions\Action;
+use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Table;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class SchedulingResource extends Resource
+class CheckOutResource extends Resource
 {
-    protected static ?string $model = Member::class;
+    protected static ?string $model = CheckIn::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getNavigationLabel(): string
     {
-        return 'Check-In';
+        return 'Check-Out';
     }
     public static function getModelLabel(): string
     {
-        return 'Check-In';
+        return 'Check-Out';
     }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                // Tambahkan schema form jika diperlukan
+                //
             ]);
     }
 
@@ -38,17 +43,15 @@ class SchedulingResource extends Resource
     {
         return $table
         ->query(
-            Member::whereHas('Membership', function ($query) {
-                $query->where('status', 'active'); // Cek status di tabel pivot
-            })
+            CheckIn::whereNull('check_out_at')
         )
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('member.name')
                     ->label('Nama Member')
                     ->sortable()
                     ->searchable(),
 
-                    BadgeColumn::make('Membership.status')
+                    BadgeColumn::make('member.Membership.status')
                     ->label('Status Membership')
                     ->sortable()
                     ->colors([
@@ -58,12 +61,8 @@ class SchedulingResource extends Resource
                     ])
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('lastCheckIn.check_in_at')
-                    ->label('Last Check-in')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('lastCheckIn.check_out_at')
-                    ->label('Last Check-out')
+                Tables\Columns\TextColumn::make('check_in_at')
+                    ->label('Check-in')
                     ->dateTime()
                     ->sortable(),
             ])
@@ -71,13 +70,12 @@ class SchedulingResource extends Resource
                 // Tambahkan filter jika diperlukan
             ])
             ->actions([
-                Action::make('check_in')
-                    ->label('Check-in')
+                Action::make('check_Out')
+                    ->label('Check-Out')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->action(fn (Member $record) => $record->checkIns()->create(['check_in_at' => now()]))
-                    ->visible(fn (Member $record) => $record->Membership()->where('status', 'active')->exists()) // Cek status di tabel pivot
+                    ->action(fn (CheckIn $record) => $record->update(['check_out_at' => now()]))
 
                 ])
             ->bulkActions([
@@ -95,9 +93,7 @@ class SchedulingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSchedulings::route('/'),
-            // 'create' => Pages\CreateScheduling::route('/create'),
-            // 'edit' => Pages\EditScheduling::route('/{record}/edit'),
+            'index' => Pages\ListCheckOuts::route('/'),
         ];
     }
 }
