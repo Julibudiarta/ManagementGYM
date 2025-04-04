@@ -41,4 +41,21 @@ class member extends Model
             ->latestOfMany(); // Mengambil paket aktif terbaru
     }
 
+    // jumlah sisa waktu hitungan hari Memberhip yang di beli keseluruhan
+    public function durationMembership(){
+        $dateNow = date("Y-m-d"); // Tanggal sekarang
+        $endDate = date("Y-m-d", strtotime($this->activeMembership()->value('end_date'))); // Ambil tanggal akhir membership
+    
+        if (!$endDate) {
+            return 0; // Jika tidak ada end_date, kembalikan 0
+        }
+    
+        // Hitung selisih hari
+        $duration = (strtotime($endDate) - strtotime($dateNow)) / (60 * 60 * 24);
+        if($duration < 0){
+            return 0;
+        }
+        return $duration;
+    }
+
 }
