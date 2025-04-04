@@ -1,5 +1,5 @@
 <x-filament::page>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    @vite('resources/css/app.css')
     {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
     <div class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-4">
         <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -8,6 +8,8 @@ use App\Models\Member;
 use App\Models\Membership_type;
 use DB;
 use Filament\Forms\Set;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -27,6 +29,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Str;
+use Filament\Infolists\Components\View as InfolistView;
 
 class MemberResource extends Resource
 {
@@ -209,9 +212,19 @@ class MemberResource extends Resource
                 ->color('primary'),
             Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),
+            Tables\Actions\ViewAction::make()
         ])
         ->bulkActions([
             Tables\Actions\DeleteBulkAction::make(),
+        ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+        ->schema([
+            InfolistView::make('filament.pages.DetailView.member')
+            ->columnSpanFull()
         ]);
     }
 
@@ -228,6 +241,7 @@ class MemberResource extends Resource
             'index' => Pages\ListMembers::route('/'),
             'create' => Pages\CreateMember::route('/create'),
             'edit' => Pages\EditMember::route('/{record}/edit'),
+            'view' => Pages\ViewMembers::route('/{record}'),
         ];
     }
 }

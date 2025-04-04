@@ -2,11 +2,23 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\CategoryResource;
+use App\Filament\Resources\CheckOutResource;
+use App\Filament\Resources\MemberResource;
+use App\Filament\Resources\MembershipResource;
+use App\Filament\Resources\MemberSubscriptionsResource;
+use App\Filament\Resources\ProductssResource;
+use App\Filament\Resources\ReportResource;
+use App\Filament\Resources\SchedulingResource;
+use App\Filament\Resources\TransactionResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationBuilder;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
+use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -40,6 +52,51 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
+
+            //navigation Group
+            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+                return $builder
+                    ->items([
+                        ...Dashboard::getNavigationItems(),
+                    ])
+                    ->groups([
+                        NavigationGroup::make('Membership')  
+                        ->items([
+                                ...MembershipResource::getNavigationItems(),
+                                ...MemberResource::getNavigationItems(),
+                                ...MemberSubscriptionsResource::getNavigationItems()
+                            ]),
+                        NavigationGroup::make('Transaction')
+                            
+                            ->collapsed()
+                            ->items([
+                                ...TransactionResource::getNavigationItems(),  
+                            ]),
+                        NavigationGroup::make('Product')
+                            ->collapsed()
+                            ->items([
+                                ...CategoryResource::getNavigationItems(), 
+                                ...ProductssResource::getNavigationItems() 
+                            ]),
+                        NavigationGroup::make('Check-in / Check-out')
+                          
+                            ->collapsed()
+                            ->items([
+                                ...SchedulingResource::getNavigationItems(), 
+                                ...CheckOutResource::getNavigationItems() 
+                            ]),
+                         NavigationGroup::make('Report')
+                          
+                            ->collapsed()
+                            ->items([
+                                ...ReportResource::getNavigationItems(),
+                            ]),
+                        ]);
+                    
+                  
+            })
+            //end Navigation Group
+
             // ->plugin(\TomatoPHP\FilamentPos\FilamentPOSPlugin::make())
             ->middleware([
                 EncryptCookies::class,
