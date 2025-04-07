@@ -48,7 +48,7 @@ class SchedulingResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                    BadgeColumn::make('Membership.status')
+                    BadgeColumn::make('activeMembership.status')
                     ->label('Status Membership')
                     ->sortable()
                     ->colors([

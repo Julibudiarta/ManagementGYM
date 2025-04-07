@@ -211,71 +211,69 @@
                         <div class="mt-4">
                             <div class="flex items-center justify-between mb-2">
                                 <h3 class="font-semibold text-gray-700 dark:text-gray-300">List Membership</h3>
-                                <a href="#" class="text-blue-500 hover:text-blue-600">Buy Membership</a>
+                                <a href="{{route('filament.admin.resources.member-subscriptions.create',['member_id' => $getRecord()->id])}}" 
+                                class="text-blue-500 hover:text-blue-600">Buy Membership</a>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Card 1 -->
-                                <div x-data="{ open: null }">
-                                    @foreach ($getRecord()->Membership as $item)
-                                        <div class="rounded-lg shadow-md overflow-visible">
-                                            <div class="bg-gray-100 px-4 py-3 rounded-t-xl">
-                                                <div class="flex items-start justify-between">
-                                                    <div>
-                                                        <p class="font-semibold text-gray-700">
-                                                            {{ $item->membershipType->name }}</p>
-                                                        <p class="text-gray-500 text-sm">
-                                                            {{ date('d M', strtotime($item->start_date)) }} -
-                                                            {{ date('d M Y', strtotime($item->end_date)) }}
-                                                        </p>
-                                                    </div>
-                                
-                                                    <!-- Tombol Tiga Titik -->
-                                                    <div class="relative">
-                                                        <button @click="open = (open === {{$item->id}} ? null : {{$item->id}})" 
-                                                            class="text-gray-500 hover:text-gray-600 focus:outline-none">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 6a1 1 0 110-2 1 1 0 010 2z">
-                                                                </path>
-                                                            </svg>
-                                                        </button>
-                                
-                                                        <!-- Popup Menu -->
-                                                        <div x-show="open === {{$item->id}}" @click.away="open = null"
-                                                            class="absolute right-0 top-full mt-2 w-32 bg-white border border-gray-200 
-                                                            rounded-lg shadow-lg z-50">
-                                                            <ul class="py-2 text-gray-700">
-                                                                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Detail</a></li>
-                                                                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Edit</a></li>
-                                                                <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Archive</a></li>
-                                                                <li><a href="#" class="block px-4 py-2 text-red-500 hover:bg-gray-100">Delete</a></li>
-                                                            </ul>
-                                                        </div>
+                                @foreach ($getRecord()->Membership as $item)
+                                    <div x-data="{ open: null }" class="rounded-lg shadow-md overflow-visible">
+                                        <div class="bg-gray-100 px-4 py-3 rounded-t-xl">
+                                            <div class="flex items-start justify-between">
+                                                <div>
+                                                    <p class="font-semibold text-gray-700">
+                                                        {{ $item->membershipType->name }}</p>
+                                                    <p class="text-gray-500 text-sm">
+                                                        {{ date('d M', strtotime($item->start_date)) }} -
+                                                        {{ date('d M Y', strtotime($item->end_date)) }}
+                                                    </p>
+                                                </div>
+                            
+                                                <!-- Tombol Tiga Titik -->
+                                                <div class="relative">
+                                                    <button @click="open = (open === {{$item->id}} ? null : {{$item->id}})" 
+                                                        class="text-gray-500 hover:text-gray-600 focus:outline-none">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 6a1 1 0 110-2 1 1 0 010 2z">
+                                                            </path>
+                                                        </svg>
+                                                    </button>
+                            
+                                                    <!-- Popup Menu -->
+                                                    <div x-show="open === {{$item->id}}" @click.away="open = null"
+                                                        class="absolute right-0 top-full mt-2 w-32 bg-white border border-gray-200 
+                                                        rounded-lg shadow-lg z-50">
+                                                        <ul class="py-2 text-gray-700">
+                                                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Detail</a></li>
+                                                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Edit</a></li>
+                                                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Archive</a></li>
+                                                            <li><a href="#" class="block px-4 py-2 text-red-500 hover:bg-gray-100">Delete</a></li>
+                                                        </ul>
                                                     </div>
                                                 </div>
                                             </div>
-                                
-                                            @if ($item->status == 'active')
-                                                <div class="bg-blue-600 text-white px-4 py-3 rounded-b-xl">
-                                            @else
-                                                <div class="bg-red-500 text-white px-4 py-3">
-                                            @endif
-                                                    <p>{!! 'Rp ' . number_format($item->membershipType->price ?? 0, 0, ',', '.') !!}</p>
-                                                    <div class="mt-2 flex justify-start">
-                                                        <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full mr-2">
-                                                            {{ $item->status }}
-                                                        </span>
-                                                        <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">paid off</span>
-                                                    </div>
-                                                </div>
                                         </div>
-                                    @endforeach
-                                </div>
-                                
+                            
+                                        @if ($item->status == 'active')
+                                            <div class="bg-blue-600 text-white px-4 py-3 rounded-b-xl">
+                                        @else
+                                            <div class="bg-red-500 text-white px-4 py-3">
+                                        @endif
+                                                <p>{!! 'Rp ' . number_format($item->membershipType->price ?? 0, 0, ',', '.') !!}</p>
+                                                <div class="mt-2 flex justify-start">
+                                                    <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full mr-2">
+                                                        {{ $item->status }}
+                                                    </span>
+                                                    <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">paid off</span>
+                                                </div>
+                                            </div>
+                                    </div>
+                                @endforeach
                             </div>
+                            
                         </div>
                     </div>
 

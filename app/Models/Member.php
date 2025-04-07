@@ -58,4 +58,9 @@ class member extends Model
         return $duration;
     }
 
+    // public function MembershipActive()
+    // {
+    //     return $this->hasOne(Member_subscriptions::class, 'member_id')->latestOfMany();
+    // }
+
 }

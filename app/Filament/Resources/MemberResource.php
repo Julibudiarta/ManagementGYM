@@ -90,41 +90,43 @@ class MemberResource extends Resource
         return $table
         ->columns([
             TextColumn::make('name')->sortable()->searchable(),
-            TextColumn::make('email')->sortable()->searchable(),
-            TextColumn::make('phone')->sortable()->searchable(),
             TextColumn::make('birthdate')->date()->sortable(),
+            TextColumn::make('phone')->sortable()->searchable(),
+            TextColumn::make('email')->sortable()->searchable(),
             TextColumn::make('address')->limit(30),
+           
             BadgeColumn::make('gender'),
             // ImageColumn::make('photo')->circular(),
             TextColumn::make('identification')->sortable(),
-            TextColumn::make('Membership.Subscriptions.name')
-            ->label('Membership')
-            ->sortable()
-            ->searchable(),
+        //     TextColumn::make('activeMembership.Subscriptions.name')
+        //     ->label('Membership')
+        //     ->sortable()
+        //     ->searchable(),
 
-        // Tambahkan kolom status dari tabel relasi
-            BadgeColumn::make('Membership.status')
-                ->label('Status')
-                ->sortable()
-                ->colors([
-                    'success' => 'active',
-                    'danger' => 'expired',
-                ]),
-            TextColumn::make('Membership.start_date')
-                ->label('Start Date')
-                ->sortable()
-                ->date(),
-            TextColumn::make('Membership.end_date')
-                ->label('End Date')
-                ->sortable()
-                ->date(),
+        // // // Tambahkan kolom status dari tabel relasi
+        //     BadgeColumn::make('activeMembership.status')
+        //         ->label('Status')
+        //         ->sortable()
+        //         ->colors([
+        //             'success' => 'active',
+        //             'danger' => 'expired',
+        //         ]),
+        //     TextColumn::make('activeMembership.start_date')
+        //         ->label('Start Date')
+        //         ->sortable()
+        //         ->date(),
+        //     TextColumn::make('activeMembership.end_date')
+        //         ->label('End Date')
+        //         ->sortable()
+        //         ->date(),
 
         ])
         ->filters([
          Filter::make('gender')->query(fn ($query, $value) => $query->where('gender', $value)),
         ])
         ->actions([
-            Action::make('activate_package')
+            Tables\Actions\ActionGroup::make([
+                Action::make('activate_package')
                 ->label('Aktifkan Paket')
                 ->icon('heroicon-o-currency-dollar')
                 ->color('primary')
@@ -187,7 +189,7 @@ class MemberResource extends Resource
                         ->reactive(),
                 ])
                 ->action(function ($record, array $data) {
-                    $record->Membership()->update(['membership_id' => $data['membershipTypeId']]);
+                    $record->activeMembership()->update(['membership_id' => $data['membershipTypeId']]);
 
                     DB::transaction(function () use ($data, $record) {
                         $record->activeMembership()->update([
@@ -213,6 +215,8 @@ class MemberResource extends Resource
             Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),
             Tables\Actions\ViewAction::make()
+            ]),
+            
         ])
         ->bulkActions([
             Tables\Actions\DeleteBulkAction::make(),
