@@ -7,7 +7,9 @@ use App\Filament\Resources\CheckOutResource;
 use App\Filament\Resources\MemberResource;
 use App\Filament\Resources\MembershipResource;
 use App\Filament\Resources\MemberSubscriptionsResource;
+use App\Filament\Resources\PlanPtResource;
 use App\Filament\Resources\ProductssResource;
+use App\Filament\Resources\PtSessionResource;
 use App\Filament\Resources\ReportResource;
 use App\Filament\Resources\SchedulingResource;
 use App\Filament\Resources\TransactionResource;
@@ -65,6 +67,11 @@ class AdminPanelProvider extends PanelProvider
                                 ...MembershipResource::getNavigationItems(),
                                 ...MemberResource::getNavigationItems(),
                                 ...MemberSubscriptionsResource::getNavigationItems()
+                            ]),
+                        NavigationGroup::make('PT Session')  
+                        ->items([
+                                ...PlanPtResource::getNavigationItems(),
+                                ...PtSessionResource::getNavigationItems(),
                             ]),
                         NavigationGroup::make('Transaction')
                             
