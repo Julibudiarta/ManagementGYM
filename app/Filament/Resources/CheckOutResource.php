@@ -51,7 +51,7 @@ class CheckOutResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                    BadgeColumn::make('member.Membership.status')
+                    BadgeColumn::make('member.activeMembership.status')
                     ->label('Status Membership')
                     ->sortable()
                     ->colors([

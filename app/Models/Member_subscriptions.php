@@ -35,4 +35,10 @@ class Member_subscriptions extends Model
             }
         });
     }
+    public function Admin(){
+        return $this->belongsTo(User::class);
+    }
+    public function Transactions(){
+        return $this->hasMany(Transactions::class,'member_id');
+    }
 }

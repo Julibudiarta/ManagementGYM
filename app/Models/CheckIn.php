@@ -9,7 +9,7 @@ class CheckIn extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['member_id', 'check_in_at','check_out_at'];
+    protected $fillable = ['member_id', 'check_in_at','check_out_at']; #tambah  Paket apa yang di check in atau class
 
     public function member()
     {
