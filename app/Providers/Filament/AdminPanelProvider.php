@@ -7,10 +7,12 @@ use App\Filament\Resources\CheckOutResource;
 use App\Filament\Resources\MemberResource;
 use App\Filament\Resources\MembershipResource;
 use App\Filament\Resources\MemberSubscriptionsResource;
+use App\Filament\Resources\PlanClassResource;
 use App\Filament\Resources\PlanPtResource;
 use App\Filament\Resources\ProductssResource;
 use App\Filament\Resources\PtSessionResource;
 use App\Filament\Resources\ReportResource;
+use App\Filament\Resources\SchedulClassResource;
 use App\Filament\Resources\SchedulingResource;
 use App\Filament\Resources\TransactionResource;
 use Filament\Http\Middleware\Authenticate;
@@ -73,6 +75,11 @@ class AdminPanelProvider extends PanelProvider
                                 ...PlanPtResource::getNavigationItems(),
                                 ...PtSessionResource::getNavigationItems(),
                             ]),
+                        NavigationGroup::make('Class')  
+                            ->items([
+                                    ...PlanClassResource::getNavigationItems(),
+                                    ...SchedulClassResource::getNavigationItems(),
+                                ]),
                         NavigationGroup::make('Transaction')
                             
                             ->collapsed()

@@ -49,4 +49,18 @@ class User extends Authenticatable
     public function Transaction(){
         return $this->hasMany(Transactions::class);
     }
+
+    public function scheduleClasses()
+    {
+        return $this->hasMany(SchedulClass::class, 'instructor_id');
+    }
+
+    public function scopeAvailableInstructor($query, $date, $time)
+    {
+        return $query
+            ->whereDoesntHave('scheduleClasses', function ($q) use ($date, $time) {
+                $q->where('day', $date)
+                ->where('time_at', $time);
+            });
+    }
 }
